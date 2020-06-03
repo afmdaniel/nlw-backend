@@ -13,5 +13,9 @@ module.exports = {
     tableName: "knex_migrations",
     extension: 'ts',
     directory: path.resolve(__dirname, 'src', 'database', 'migrations')
+  },
+  seeds: {
+    extension: 'ts',
+    directory: path.resolve(__dirname, 'src', 'database', 'seeds')
   }
 };
