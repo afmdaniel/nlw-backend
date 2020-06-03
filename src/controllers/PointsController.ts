@@ -2,6 +2,28 @@ import knex from '../database/connection'
 import { Request, Response } from 'express'
 
 class PointsController {
+    async index(request: Request, response: Response) {
+        const { city, uf, items } = request.query
+
+        const parsedItems = String(items)
+            .split(',')
+            .map(item => Number(item.trim()))
+
+        try{
+            const points = await knex('garbage_collection_points')
+                .join('items_points', 'garbage_collection_points.id', '=', 'items_points.point_id')
+                .whereIn('items_points.item_id', parsedItems)
+                .where('city', String(city))
+                .where('uf', String(uf))
+                .distinct()
+                .select('garbage_collection_points.*')
+
+            return response.json(points)
+        } catch (err) {
+            return response.status(500).json(err)
+        }
+    }
+    
     async show(request: Request, response: Response) {
         const { id } = request.params
 
@@ -16,7 +38,7 @@ class PointsController {
                 .join('items_points', 'items_for_collection.id', '=', 'items_points.item_id')
                 .where('items_points.point_id', id)
                 .select('items_for_collection.title')
-                
+
             return response.status(200).json({ point, items })
         } catch (err) {
             return response.status(500).json(err)
@@ -59,10 +81,10 @@ class PointsController {
             })
         
             await trx('items_points').insert(pointItems)
-            trx.commit()
+            await trx.commit()
             return response.status(201).json({ point_id, ...points })
         } catch (err) {
-            trx.rollback()
+            await trx.rollback()
             return response.status(500).json(err)
         }
     }
