@@ -1,0 +1,7 @@
+module.exports = {
+    dataBaseConfig: {
+        database: '',
+        user: '',
+        password: ''
+    }
+}
