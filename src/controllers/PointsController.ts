@@ -47,7 +47,7 @@ class PointsController {
 
     async create(request: Request, response: Response) {
         const points = {
-            image: 'https://images.unsplash.com/photo-1556767576-5ec41e3239ea?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60',
+            image: request.file.filename,
             name: request.body.name,
             email: request.body.email,
             whatsapp: request.body.whatsapp,
@@ -58,13 +58,17 @@ class PointsController {
         }
     
         const items = request.body.items
+        
+        const parsedItems = String(items)
+            .split(',')
+            .map(item => Number(item.trim()))
 
         const trx = await knex.transaction()
         
         try {
             const [ point_id ] = await trx('garbage_collection_points').insert(points).returning('id')
         
-            const pointItems = items.map((item_id: number) => {
+            const pointItems = parsedItems.map((item_id: number) => {
                 return {
                     item_id,
                     point_id
