@@ -18,7 +18,14 @@ class PointsController {
                 .distinct()
                 .select('garbage_collection_points.*')
 
-            return response.json(points)
+                const serializedPoints = points.map(point => {
+                    return {
+                        ...point,
+                        image: `http://192.168.0.17:3333/uploads/${point.image}`
+                    }
+                })
+
+            return response.json(serializedPoints)
         } catch (err) {
             return response.status(500).json(err)
         }
@@ -34,12 +41,17 @@ class PointsController {
                 return response.status(400).json({ message: 'Point not found' })
             }
 
+            const serializedPoint = {
+                ...point,
+                image: `http://192.168.0.17:3333/uploads/${point.image}`
+            }
+
             const items = await knex('items_for_collection')
                 .join('items_points', 'items_for_collection.id', '=', 'items_points.item_id')
                 .where('items_points.point_id', id)
                 .select('items_for_collection.title')
 
-            return response.status(200).json({ point, items })
+            return response.status(200).json({ point: serializedPoint, items })
         } catch (err) {
             return response.status(500).json(err)
         }
